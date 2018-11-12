@@ -28,12 +28,6 @@ to bring your badge to life and operate the peripherals correctly. It is recomme
 that you initialize your badge properly by adding an `import badge` statement at the
 top of your `main.py` script.
 
-### `badge.imu`
-This contains an instance of the MMA7660 accelerometer, which has been configured to
-perform wakeup and tap detection on the badge. The accelerometer is also available
-for orientation detection. Please refer to the micropython documentation for the API
-to the `pyb.Accel` class.
-
 ### `badge.ble`
 This contains an instance of the `pyb.UART` class, and is configured to communicate
 to the Taiyo Yuden EYSGCNZWY bluetooth module.

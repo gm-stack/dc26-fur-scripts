@@ -8,7 +8,7 @@
 sleeptimeout = 900000
 
 # The default banner message to print in the scroll.py animation.
-banner = "DEFCON Furs"
+banner = "KIWICON Furs"
 
 # Enable extra verbose debug messages.
 debug = False

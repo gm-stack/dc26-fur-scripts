@@ -1,63 +1,74 @@
 ## Wormy animation
-import dcfurs
-import badge
 import random
 
+import badge
+import dcfurs
+
+
+def shuffle(seq):
+    l = len(seq)
+    for i in range(l):
+        j = random.randint(0, l - 1)
+        seq[i], seq[j] = seq[j], seq[i]
+
+
 class worm:
-  interval = 5
-  x = 1
-  y = 1
+    interval = 50
+    x = 1
+    y = 1
+    moves = frozenset([(0, 1), (1, 0), (0, -1), (-1, 0)])
 
-  def __init__(self):
-    self.fbuf = [bytearray(18),bytearray(18),bytearray(18),bytearray(18),bytearray(18),bytearray(18),bytearray(18)]
-    self.counter = 0
+    def __init__(self):
+        self.fbuf = [
+            bytearray(18),
+            bytearray(18),
+            bytearray(18),
+            bytearray(18),
+            bytearray(18),
+            bytearray(18),
+            bytearray(18),
+        ]
+        self.last_move = (1, 0)
+        self.counter = 0
 
-  def updatePosition(self):
-    self.dimPixels()
-    (tx, ty, tz) = badge.imu.filtered_xyz()
-    new_x = 0
-    new_y = 0                        # NOTE:  X and Y mean different things to ty and friends, than x and friends.  Yeah....
-    if tx < -70 and self.y > 1:      # We basically have the badge upside down
-      new_y -= 1
-      if random.randint(0, 1) == 1:  # Fidget X
-        new_x += 1
-    elif ty < -8 and self.x > 1:    # If we tilt it left or right, (or if it's already at the top because we're upside down)
-      if random.randint(0, 1) == 1:  # We only want to obey this kind of tilt half the time, otherwise let's fidget Y
-        new_x += 1
-      else:
-        new_y = random.randint(-1, 1) 
-    elif ty > 8 and self.x < 17:    # Tilting other way, same as above
-      if random.randint(0, 1) == 1:
-        new_x -= 1
-      else:
-        new_y = random.randint(-1, 1)
-    else:                            # Otherwise let's basically just move randomly
-      move_x = random.randint(0, 1)
-      if move_x:
-        new_x = random.randint(-1, 1)
-      else:
-        new_y = random.randint(-1, 1)
-    if (dcfurs.has_pixel(self.x + new_x, self.y + new_y)):
-      self.x += new_x
-      self.y += new_y
-    else: # Always move.  This could lead to recursive crash if this method is programmed poorly :)
-      self.updatePosition()
-    self.setPixel(self.x, self.y, 255)
+    def updatePosition(self):
+        self.dimPixels()
+        new_x = 0
+        new_y = 0
+        run_once = False
+        # Let's basically just move randomly
+        moves = list(self.moves) + [self.last_move]
+        shuffle(moves)
+        for new_x, new_y in moves:
+            x = (self.x + dcfurs.ncols + new_x) % dcfurs.ncols
+            y = (self.y + dcfurs.nrows + new_y) % dcfurs.nrows
+            if self.fbuf[y][x] == 0 and dcfurs.has_pixel(x, y):
+                self.last_move = (new_x, new_y)
+                self.x = x
+                self.y = y
+                self.setPixel(self.x, self.y, 255)
+                return
+        # No valid moves
+        x, y = random.randint(0, dcfurs.ncols), random.randint(0, dcfurs.nrows)
+        while self.fbuf[y][x] != 0 and not dcfurs.has_pixel(x, y):
+            x, y = random.randint(0, dcfurs.ncols), random.randint(0, dcfurs.nrows)
+        self.last_move = None
+        self.x = x
+        self.y = y
+        self.setPixel(self.x, self.y, 255)
 
-  def dimPixels(self):
-    for y in range(0,len(self.fbuf)):
-      row = self.fbuf[y]
-      for x in range(0, len(row)):
-        if self.fbuf[y][x] > 16:
-          self.fbuf[y][x] -= 8
-          if self.fbuf[y][x] > 128:
-            self.fbuf[y][x] -= 8
-        else:
-          self.fbuf[y][x] = 0
- 
-  def setPixel(self, x, y, value):
-    self.fbuf[y][x] = value 
-  
-  def draw(self):
-    self.updatePosition()
-    dcfurs.set_frame(self.fbuf)
+    def dimPixels(self):
+        for y in range(0, len(self.fbuf)):
+            row = self.fbuf[y]
+            for x in range(0, len(row)):
+                if self.fbuf[y][x] > 4:
+                    self.fbuf[y][x] = self.fbuf[y][x] // 2
+                else:
+                    self.fbuf[y][x] = 0
+
+    def setPixel(self, x, y, value):
+        self.fbuf[y][x] = value
+
+    def draw(self):
+        self.updatePosition()
+        dcfurs.set_frame(self.fbuf)

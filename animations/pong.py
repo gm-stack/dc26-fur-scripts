@@ -6,6 +6,7 @@ import dcfurs
 import badge
 import random
 
+
 class pong:
     def __init__(self):
         self.interval = 150
@@ -13,11 +14,11 @@ class pong:
         self.leftright = 1
         self.bouncecount = 0
         while True:
-            self.x = random.randint(0, dcfurs.ncols-1)
-            self.y = random.randint(0, dcfurs.nrows-1)
+            self.x = random.randint(0, dcfurs.ncols - 1)
+            self.y = random.randint(0, dcfurs.nrows - 1)
             if dcfurs.has_pixel(self.x, self.y):
                 break
-    
+
     def bounce(self):
         nx = self.x + self.leftright
         ny = self.y + self.updown

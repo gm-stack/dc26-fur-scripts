@@ -4,7 +4,6 @@ import dcfurs
 import settings
 from pyb import Pin
 from pyb import Timer
-from pyb import Accel
 from pyb import ExtInt
 from pyb import I2C
 from pyb import UART
@@ -13,6 +12,7 @@ from pyb import UART
 ## LED Matrix Drivers
 ##-----------------------------------------------
 import micropython
+
 micropython.alloc_emergency_exception_buf(100)
 
 ## Bring up the LED matrix
@@ -23,7 +23,7 @@ dcfurs.clear()
 ##-----------------------------------------------
 ## Bluetooth Module
 ##-----------------------------------------------
-ble_enable = Pin('BLE_EN', Pin.OUT_OD)
+ble_enable = Pin("BLE_EN", Pin.OUT_OD)
 ble_enable.value(0)
 pyb.delay(5)
 ble_enable.value(1)
@@ -40,6 +40,7 @@ def ble_set(name, value=None):
         ble.write(ch)
         pyb.delay(1)
 
+
 ##-----------------------------------------------
 ## Pushbutton Class
 ##-----------------------------------------------
@@ -47,7 +48,7 @@ class switch(Pin):
     def __init__(self, pin):
         self.pin = pin
         self.prev = self.pin.value()
-    
+
     ## Returns 1 on a rising edge, or 0 on no change.
     def event(self):
         if not self.prev:
@@ -57,8 +58,9 @@ class switch(Pin):
             self.prev = self.pin.value()
             return 0
 
-right = switch(Pin('SW1', Pin.IN))
-left = switch(Pin('SW2', Pin.IN, pull=Pin.PULL_DOWN))
+
+right = switch(Pin("SW1", Pin.IN))
+left = switch(Pin("SW2", Pin.IN, pull=Pin.PULL_DOWN))
 
 ##-----------------------------------------------
 ## Capacative Touch Controller
@@ -76,7 +78,7 @@ class capsense:
     REG_OTP_BANK_3 = const(0x07)
     REG_QUICK_RELEASE = const(0x08)
     REG_MOVEMENT = const(0x09)
-    REG_TOUCH_THRESHOLD = const(0x0a)
+    REG_TOUCH_THRESHOLD = const(0x0A)
     REG_PROXIMITY_THRESHOLD = const(0x0B)
     REG_TEMPERATURE_THRESHOLD = const(0x0C)
     REG_CH0_MULTIPLIERS = const(0x0D)
@@ -137,7 +139,7 @@ class capsense:
         self.i2c = I2C(1, I2C.MASTER, baudrate=400000)
         if not self.i2c.is_ready(self.IQS231_ADDR):
             self.i2c = None
-    
+
     def write(self, addr, val):
         if self.i2c:
             self.i2c.mem_write(bytearray([val]), self.IQS231_ADDR, addr)
@@ -148,13 +150,15 @@ class capsense:
             return buf[1]
         else:
             return 0
-    
+
     def debug(self):
         if self.i2c:
             buf = self.i2c.mem_read(6, self.IQS231_ADDR, self.REG_EVENT_FLAGS)
-            print("0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x" % 
-                (buf[0], buf[1], buf[2], buf[3], buf[4], buf[5]))
-    
+            print(
+                "0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x"
+                % (buf[0], buf[1], buf[2], buf[3], buf[4], buf[5])
+            )
+
     def event(self):
         if not self.i2c:
             return False
@@ -175,48 +179,19 @@ class capsense:
         acf = (buf[1] << 8) + buf[2]
         lta = (buf[3] << 8) + buf[4]
         if self.prev:
-            self.prev = (acf < (lta/2))
+            self.prev = acf < (lta / 2)
             return False
         else:
-            self.prev = (acf < (lta/2))
+            self.prev = acf < (lta / 2)
             return self.prev
 
+
 boop = capsense()
-
-##-----------------------------------------------
-## Accelerometer and Sleep Control
-##-----------------------------------------------
-## Bring up and configure the Accelerometer
-imu = pyb.Accel()
-imu.write(0x7, 0x00)    # Switch to standby mode
-imu.write(0x8, 0x00)    # Set sampling rate to 120Hz
-imu.write(0x6, 0xe4)    # Enable shake and tap detection interrupts
-imu.write(0x9, 0x6f)    # Set tap threshold to 15 counts, disable all by Z-axis for tap.
-imu.write(0xA, 0x0f)    # Increase the tap debounce threshold.
-imu.write(0x7, 0xc1)    # Set push-pull active-high interrupt, back to active mode.
-
-## For tracking orientation.
-xyz = [imu.x(), imu.y(), imu.y()]
-sensitivity = 5
 
 ## Keep track of activity timing.
 evtime = 0
 
-## Enable wakeup from an active-high edge on PA0
-def imucallback(line):
-    global evtime
-    evtime = pyb.millis()
-    return imu.read(0x3)
-    
-def imudebug(line):
-    tilt = imucallback(line)
-    if (tilt & 0x80) != 0:
-        print("Shake detected!")
-    if (tilt & 0x20) != 0:
-        print("Tap detected!")
-
-exti = ExtInt('MMA_INT', Pin.IRQ_RISING, Pin.PULL_NONE, imucallback if not settings.debug else imudebug)
-vbus = Pin('USB_VBUS', Pin.IN)
+vbus = Pin("USB_VBUS", Pin.IN)
 
 ## Check for low power states, or do nothing.
 def trysuspend():
@@ -225,18 +200,6 @@ def trysuspend():
     ## Do nothing if sleep is disabled
     timeout = settings.sleeptimeout
     if not timeout:
-        return False
-
-    ## Detect motion via the accelerometer
-    dx = imu.x() - xyz[0]
-    dy = imu.y() - xyz[1]
-    dz = imu.z() - xyz[2]
-    delta = (dx * dx) + (dy * dy) + (dz * dz)
-    xyz[0] += dx
-    xyz[1] += dy
-    xyz[2] += dz
-    if delta > (sensitivity * sensitivity):
-        evtime = pyb.millis()
         return False
 
     ## Never suspend when USB VBus is present
@@ -249,5 +212,5 @@ def trysuspend():
     ## Turn off the display and go to deep sleep, with PA0 wakeup enabled.
     ble_enable.value(0)
     dcfurs.clear()
-    pyb.standby(True)   # NOTE: pyb.standby API modified to enable PA0 wakeup.
+    pyb.standby(True)  # NOTE: pyb.standby API modified to enable PA0 wakeup.
     ## Will never get here...

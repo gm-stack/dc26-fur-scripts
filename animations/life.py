@@ -2,21 +2,30 @@
 import dcfurs
 import random
 
+
 class life:
     def __init__(self):
-        self.fbuf = [bytearray(18),bytearray(18),bytearray(18),bytearray(18),bytearray(18),bytearray(18),bytearray(18)]
+        self.fbuf = [
+            bytearray(18),
+            bytearray(18),
+            bytearray(18),
+            bytearray(18),
+            bytearray(18),
+            bytearray(18),
+            bytearray(18),
+        ]
         self.interval = 750
         self.watchdog = 0
         dcfurs.clear()
 
         ## populate the initial state of the game
-        for y in range(0,len(self.fbuf)):
+        for y in range(0, len(self.fbuf)):
             row = self.fbuf[y]
             for x in range(0, len(row)):
                 if random.randint(0, 2) == 0:
                     row[x] = 255
                     dcfurs.set_pixel(x, y, row[x])
-    
+
     ## Check if a given cell is alive
     def alive(self, x, y):
         ## Wrap around to simulate an infinite field
@@ -34,8 +43,8 @@ class life:
     ## Count the neighbors of a cell
     def neighbors(self, col, row):
         count = -self.alive(col, row)
-        for x in range(col-1, col+2):
-            for y in range(row-1, row+2):
+        for x in range(col - 1, col + 2):
+            for y in range(row - 1, row + 2):
                 if self.alive(x, y):
                     count += 1
         return count
@@ -43,9 +52,17 @@ class life:
     ## Run a tick of the animation
     def draw(self):
         ## Compute the next tick and draw it to the screen
-        next = [bytearray(18),bytearray(18),bytearray(18),bytearray(18),bytearray(18),bytearray(18),bytearray(18)]
+        next = [
+            bytearray(18),
+            bytearray(18),
+            bytearray(18),
+            bytearray(18),
+            bytearray(18),
+            bytearray(18),
+            bytearray(18),
+        ]
         delta = 0
-        for y in range(0,len(self.fbuf)):
+        for y in range(0, len(self.fbuf)):
             row = next[y]
             for x in range(0, len(row)):
                 count = self.neighbors(x, y)
