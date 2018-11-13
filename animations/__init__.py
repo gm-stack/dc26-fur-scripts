@@ -18,7 +18,7 @@ from animations.worm import worm
 
 
 ## Template class for JSON-encoded animations
-class __jsonanim__:
+class _jsonanim:
     def __init__(self):
         fh = open(self.path, "r")
         self.framenum = 0
@@ -49,11 +49,14 @@ class __jsonanim__:
 ## Dynamically generate animation classes from JSON files.
 files = os.listdir("/flash/animations")
 for filename in files:
-    if filename[:2] != "__" and filename[-5:] == ".json":
+    if filename[1] != "_" and filename[-5:] == ".json":
         classname = filename[:-5]
-        globals()[classname] = type(
-            classname, (__jsonanim__,), {"path", "/flash/animations/" + filename}
-        )
+        try:
+            globals()[classname] = type(
+                classname, (_jsonanim,), {"path", "/flash/animations/" + filename}
+            )
+        except TypeError as e:
+            print(classname, filename, e)
 
 
 ## Return a list of all animation classes
@@ -62,6 +65,6 @@ def all():
     module = sys.modules["animations"]
     for name in dir(module):
         x = getattr(module, name)
-        if isinstance(x, type) and name[:2] != "__":
+        if isinstance(x, type) and name[1] != "_":
             results.append(x)
     return sorted(results, key=lambda m: m.__name__.lower())

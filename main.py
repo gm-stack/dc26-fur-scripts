@@ -40,7 +40,6 @@ PYTHON_SHELL_FACE = [
     0,
     0,
 ]
-[0x00, 0x22, 0x14, 0x08]
 
 
 ## Handle events from the BLE module.

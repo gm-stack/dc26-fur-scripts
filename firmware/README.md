@@ -22,6 +22,16 @@ to generate this file.
 After cloning the Micropython firmware, change directory into `firmware/micropython/ports/stm32`
 and run the command `make BOARD=DCFURS_F411 FLASH_TARBALL_FILE=../../../../dc26-fur-scripts.tar.gz`
 
+```
+tools/dcfurs-mktar.sh \
+&& ( \
+  cd firmware/micropython/ports/stm32 \
+  && make BOARD=DCFURS_F411 FLASH_TARBALL_FILE=../../../../dc26-fur-scripts.tar.gz \
+  && cp build-DCFURS_F411/firmware.{elf,dfu,hex} ../../../../
+)
+```
+
+
 Preparing Zephyr
 ----------------
 Please read through the Zephyr [Getting Started Guide](http://docs.zephyrproject.org/getting_started/getting_started.html)
