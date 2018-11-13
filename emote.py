@@ -89,13 +89,11 @@ def owo():
 
 
 def boop():
-    dcfurs.set_row(0, 0x0E48E)
-    dcfurs.set_row(1, 0x12B52)
-    dcfurs.set_row(2, 0x12B52)
-    dcfurs.set_row(3, 0x0EB4E)
-    dcfurs.set_row(4, 0x02492)
-    dcfurs.set_row(5, 0x02012)
-    dcfurs.set_row(6, 0x0200E)
+    from boop import boop, inverting_boop, deal_with_it_boop
+
+    # return inverting_boop()
+    # return deal_with_it_boop()
+    return boop()
 
 
 def beep():

@@ -89,8 +89,9 @@ class Main:
         self.available = None
         self.selected = 0
         self.ival = 0
+        self.overide_anim = None
         self.anim = None
-        self.interactive = False
+        self.interactive = settings.debug
 
     def get_all_animations(self):
         results = []
@@ -145,11 +146,16 @@ class Main:
         if badge.ble.any():
             ble()
         if badge.boop.event():
+            override = None
             if hasattr(self.anim, "boop") and callable(getattr(self.anim, "boop")):
-                self.anim.boop()
+                override = self.anim.boop()
             else:
-                emote.boop()
+                override = emote.boop()
                 self.ival = 1000
+            if override is not None:
+                # Return an animation that is a one-shot animation.
+                self.overide_anim = override
+                self.ival = 0
 
     def main(self):
         ## Program the serial number into the BLE module, which ought
@@ -172,17 +178,23 @@ class Main:
                     print(e)
 
         while True:
-            if self.ival <= 0 and self.anim:
-                try:
+            try:
+                if self.ival <= 0 and self.overide_anim:
+                    draw_result = self.overide_anim.draw()
+                    self.ival = self.overide_anim.interval
+                    if draw_result:
+                        # The animation indicated it was over.
+                        self.overide_anim = None
+                if self.ival <= 0 and self.anim:
                     self.anim.draw()
                     self.ival = self.anim.interval
-                except Exception as e:
-                    dcfurs.set_frame(EXCEPTION_FACE)
-                    self.ival = 1000
-                    if self.interactive:
-                        raise e
-                    else:
-                        print(e)
+            except Exception as e:
+                dcfurs.set_frame(EXCEPTION_FACE)
+                self.ival = 1000
+                if self.interactive:
+                    raise e
+                else:
+                    print(e)
             self.handle_events()
 
             ## Run the animation timing
