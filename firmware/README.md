@@ -15,13 +15,21 @@ yourself from:
 
 Building Micropython
 --------------------
-Prior to building the Micropython firmware, we must first generate a tarball
-containing the initial filesystem. Use the script at `tools/dcfurs-mktar.sh`
-to generate this file.
 
-After cloning the Micropython firmware, change directory into `firmware/micropython/ports/stm32`
-and run the command `make BOARD=DCFURS_F411 FLASH_TARBALL_FILE=../../../../dc26-fur-scripts.tar.gz`
+Setup:
+```
+export GNUARMEMB_TOOLCHAIN_PATH="<PATH TO TOOLCHAIN FOLDER>"
+export ZEPHYR_BASE="$(pwd)/firmware/zephyr"
+export ZEPHYR_TOOLCHAIN_VARIANT=gnuarmemb 
+export PATH="$ZEPHYR_BASE/scripts:$GNUARMEMB_TOOLCHAIN_PATH/bin:$PATH"
+```
 
+Old build tidy:
+```
+rm -rf firmware/micropython/ports/stm32/build-DCFURS_F411 dc26-fur-scripts.tar.gz
+```
+
+Build:
 ```
 tools/dcfurs-mktar.sh \
 && ( \
@@ -31,6 +39,10 @@ tools/dcfurs-mktar.sh \
 )
 ```
 
+Flash:
+```
+sudo dfu-util -a 0 -d 0483:df11 -D firmware.dfu
+```
 
 Preparing Zephyr
 ----------------

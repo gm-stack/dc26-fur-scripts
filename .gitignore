@@ -1,5 +1,6 @@
 # Project stuff
 dc26-fur-scripts.tar.gz
+firmware.*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
