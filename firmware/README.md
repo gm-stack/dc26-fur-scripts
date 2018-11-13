@@ -19,8 +19,8 @@ Prior to building the Micropython firmware, we must first generate a tarball
 containing the initial filesystem. Use the script at `tools/dcfurs-mktar.sh`
 to generate this file.
 
-After cloning the Micropython firmware, change directory into `ports/stm32`
-and run the command `make BOARD=DCFURS_F411 FLASH_TARBALL_FILE=<path to dc26-fur-scripts.tar.gz>`
+After cloning the Micropython firmware, change directory into `firmware/micropython/ports/stm32`
+and run the command `make BOARD=DCFURS_F411 FLASH_TARBALL_FILE=../../../../dc26-fur-scripts.tar.gz`
 
 Preparing Zephyr
 ----------------

@@ -1,6 +1,6 @@
 [submodule "firmware/micropython"]
 	path = firmware/micropython
-	url = https://github.com/oskirby/micropython-dcfurs.git
+	url = https://github.com/InFurSecDen/micropython-dcfurs.git
 [submodule "firmware/zephyr"]
 	path = firmware/zephyr
-	url = https://github.com/oskirby/zephyr.git
+	url = https://github.com/InFurSecDen/zephyr.git
