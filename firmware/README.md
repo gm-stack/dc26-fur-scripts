@@ -36,7 +36,7 @@ Change directory into the `firmware/bluetooth` directory, and run the following 
 to build the firmware:
 
 ```
-    source <path to zephyr>/zephyr-env.sh
+    source ../zephyr/zephyr-env.sh
     export ZEPHYR_TOOLCHAIN_VARIANT=gccarmemb
     mkdir build && cd build
     cmake -GNinja -DBOARD=nrf51_eysgcnzwy ..
