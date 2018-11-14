@@ -14,6 +14,7 @@ from animations.maze import maze
 from animations.pong import pong
 from animations.rain import rain
 from animations.scroll import scroll
+from animations.southern_lights import southern_lights
 from animations.worm import worm
 
 
